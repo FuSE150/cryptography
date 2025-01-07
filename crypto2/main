@@ -1,0 +1,106 @@
+import random
+
+def modular_exponentiation(a, b, n):
+    result = 1
+    a = a % n
+    while b > 0:
+        if b % 2 == 1:
+            result = (result * a) % n
+        b = b >> 1
+        a = (a * a) % n
+    return result
+
+def gcd(a, b):
+    while b != 0:
+        a, b = b, a % b
+    return a
+
+def extended_gcd(a, b):
+    if a == 0:
+        return b, 0, 1
+    gcd, x1, y1 = extended_gcd(b % a, a)
+    x = y1 - (b // a) * x1
+    y = x1
+    return gcd, x, y
+
+def modular_inverse(a, n):
+    gcd, x, y = extended_gcd(a, n)
+    if gcd != 1:
+        raise ValueError("Обратного элемента не существует")
+    return x % n
+
+def is_prime(n, k=100):
+    if n <= 1:
+        return False
+    if n <= 3:
+        return True
+    if n % 2 == 0:
+        return False
+
+    r, d = 0, n - 1
+    while d % 2 == 0:
+        d //= 2
+        r += 1
+
+    for _ in range(k):
+        a = random.randint(2, n - 2)
+        x = modular_exponentiation(a, d, n)
+        if x == 1 or x == n - 1:
+            continue
+        for _ in range(r - 1):
+            x = modular_exponentiation(x, 2, n)
+            if x == n - 1:
+                break
+        else:
+            return False
+    return True
+
+def generate_large_prime(bits):
+    while True:
+        prime_candidate = random.getrandbits(bits) | (1 << bits - 1) | 1
+        if is_prime(prime_candidate):
+            return prime_candidate
+
+def menu():
+    while True:
+        print("\nВыберите операцию:")
+        print("1. Возведение числа в степень по модулю")
+        print("2. Вычисление наибольшего общего делителя (НОД)")
+        print("3. Вычисление обратного значения в кольце вычетов")
+        print("4. Генерация большого простого числа")
+        print("5. Выход")
+
+        choice = input("Введите номер операции: ")
+
+        if choice == '1':
+            a = int(input("Введите число a: "))
+            b = int(input("Введите степень b: "))
+            n = int(input("Введите модуль n: "))
+            print(f"{a}^{b} mod {n} = {modular_exponentiation(a, b, n)}")
+
+        elif choice == '2':
+            a = int(input("Введите первое число: "))
+            b = int(input("Введите второе число: "))
+            print(f"НОД({a}, {b}) = {gcd(a, b)}")
+
+        elif choice == '3':
+            a = int(input("Введите число a: "))
+            n = int(input("Введите модуль n: "))
+            try:
+                print(f"Обратное значение {a} по модулю {n} = {modular_inverse(a, n)}")
+            except ValueError as e:
+                print(e)
+
+        elif choice == '4':
+            bits = int(input("Введите количество бит для простого числа: "))
+            print(f"Сгенерированное простое число: {generate_large_prime(bits)}")
+
+        elif choice == '5':
+            print("Выход из программы.")
+            break
+
+        else:
+            print("Неверный выбор, попробуйте снова.")
+
+if __name__ == "__main__":
+    menu()
